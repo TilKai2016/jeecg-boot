@@ -7,7 +7,14 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import com.aill.sso.oauth.client.pojo.bo.OAuth2AccessToken;
+import com.aill.sso.oauth.client.pojo.dto.TkeyToken;
+import com.aill.sso.oauth.client.service.TkeyService;
+import com.aill.sso.oauth.client.utils.CodecUtil;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.jeecg.common.api.vo.Result;
@@ -25,11 +32,7 @@ import org.jeecg.modules.system.service.ISysDepartService;
 import org.jeecg.modules.system.service.ISysLogService;
 import org.jeecg.modules.system.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -56,6 +59,8 @@ public class LoginController {
     private RedisUtil redisUtil;
 	@Autowired
     private ISysDepartService sysDepartService;
+	@Autowired
+	private TkeyService tkeyService;
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@ApiOperation("登录接口")
@@ -105,7 +110,7 @@ public class LoginController {
 	
 	/**
 	 * 退出登录
-	 * @param username
+	 * @param
 	 * @return
 	 */
 	@RequestMapping(value = "/logout")
@@ -125,7 +130,26 @@ public class LoginController {
 	    redisUtil.del(CommonConstant.LOGIN_USER_CACHERULES_PERMISSION + sysUser.getUsername());
 		return Result.ok("退出登录成功！");
 	}
-	
+
+	/**
+	 * 接收 code，然后换取 token
+	 */
+	@SneakyThrows
+	@RequestMapping(value = "/codeCallback", method = RequestMethod.GET)
+	public void codeCallback(final HttpServletRequest request, final HttpServletResponse response, @RequestParam(value = "redirect_uri", required = true) String redirectUri) {
+		String code = request.getParameter("code");
+
+		if (StringUtils.isBlank(code)) {
+			return;
+		}
+
+		getAccessToken(request, response, code);
+
+		// 重定向到原请求地址
+		redirectUri = CodecUtil.decodeURL(redirectUri);
+		response.sendRedirect(redirectUri);
+	}
+
 	/**
 	 * 获取访问量
 	 * @return
@@ -142,7 +166,7 @@ public class LoginController {
         calendar.set(Calendar.SECOND,0);
         calendar.set(Calendar.MILLISECOND,0);
         Date dayStart = calendar.getTime();
-        calendar.add(calendar.DATE, 1);
+        calendar.add(Calendar.DATE, 1);
         Date dayEnd = calendar.getTime();
 		// 获取系统访问记录
 		Long totalVisitCount = logService.findTotalVisitCount();
@@ -170,5 +194,21 @@ public class LoginController {
 		return Result.ok();
 	}
 
+	//=====================================私有方法 start=====================================
+
+	private void getAccessToken(final HttpServletRequest request, final HttpServletResponse response, String code) {
+		OAuth2AccessToken oauthToken = tkeyService.getAccessToken(code);
+		String accessToken = oauthToken.getAccessToken();
+
+		TkeyToken tkeyToken = new TkeyToken();
+		tkeyToken.setAccessToken(accessToken);
+		tkeyToken.setRefreshToken(oauthToken.getRefreshToken());
+		tkeyToken.setAttributes(tkeyService.getUserProfile(oauthToken));
+
+		HttpSession session = request.getSession();
+		session.setAttribute("userinfo", tkeyToken);
+	}
+
+	//=====================================私有方法  end=====================================
 
 }

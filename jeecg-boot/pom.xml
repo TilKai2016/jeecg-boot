@@ -16,7 +16,8 @@
 	<modules>
 		<module>jeecg-boot-base-common</module>
 		<module>jeecg-boot-module-system</module>
-	</modules> 
+        <module>sso-client-starter</module>
+    </modules>
 	
 	<distributionManagement>
 	  	<repository>

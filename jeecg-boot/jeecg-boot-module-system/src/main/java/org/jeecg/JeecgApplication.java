@@ -1,5 +1,6 @@
 package org.jeecg;
 
+import com.aill.sso.oauth.client.EnableTkeySso;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -13,8 +14,8 @@ import java.net.UnknownHostException;
 
 @Slf4j
 @EnableSwagger2
+@EnableTkeySso
 @SpringBootApplication
-@EnableAutoConfiguration
 public class JeecgApplication {
 
   public static void main(String[] args) throws UnknownHostException {
