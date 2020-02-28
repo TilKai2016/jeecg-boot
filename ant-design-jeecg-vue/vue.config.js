@@ -1,6 +1,6 @@
 const path = require('path')
 
-function resolve(dir) {
+function resolve (dir) {
   return path.join(__dirname, dir)
 }
 
@@ -66,7 +66,7 @@ module.exports = {
         target: 'http://localhost:8080', //请求本地 需要jeecg-boot后台项目
         ws: false,
         changeOrigin: true
-      },
+      }
     }
   },
 

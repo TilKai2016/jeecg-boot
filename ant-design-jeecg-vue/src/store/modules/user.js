@@ -63,15 +63,16 @@ const user = {
     // 获取用户信息
     GetPermissionList({ commit }) {
       return new Promise((resolve, reject) => {
-        let v_token = Vue.ls.get(ACCESS_TOKEN);
-        let params = {token:v_token};
+        debugger
+        let v_token = Vue.ls.get(ACCESS_TOKEN)
+        let params = {token:v_token}
         queryPermissionsByUser(params).then(response => {
-          const menuData = response.result.menu;
-          const authData = response.result.auth;
-          const allAuthData = response.result.allAuth;
-          //Vue.ls.set(USER_AUTH,authData);
-          sessionStorage.setItem(USER_AUTH,JSON.stringify(authData));
-          sessionStorage.setItem(SYS_BUTTON_AUTH,JSON.stringify(allAuthData));
+          const menuData = response.result.menu
+          const authData = response.result.auth
+          const allAuthData = response.result.allAuth
+          // Vue.ls.set(USER_AUTH,authData);
+          sessionStorage.setItem(USER_AUTH, JSON.stringify(authData))
+          sessionStorage.setItem(SYS_BUTTON_AUTH, JSON.stringify(allAuthData))
           if (menuData && menuData.length > 0) {
             commit('SET_PERMISSIONLIST', menuData)
           } else {
