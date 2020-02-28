@@ -63,7 +63,6 @@ const user = {
     // 获取用户信息
     GetPermissionList({ commit }) {
       return new Promise((resolve, reject) => {
-        debugger
         let v_token = Vue.ls.get(ACCESS_TOKEN)
         let params = {token:v_token}
         queryPermissionsByUser(params).then(response => {
